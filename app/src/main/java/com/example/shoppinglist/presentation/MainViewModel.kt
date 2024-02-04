@@ -1,8 +1,11 @@
 package com.example.shoppinglist.presentation
 
+import android.view.LayoutInflater
+import android.widget.TextView
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.shoppinglist.R
 import com.example.shoppinglist.data.ShopListRepositoryImpl
 import com.example.shoppinglist.domain.DeleteShopItemUseCase
 import com.example.shoppinglist.domain.EditShopItemUseCase
@@ -31,4 +34,10 @@ class MainViewModel : ViewModel() {
         editShopItem(newItem)
     }
 
-}
+
+
+
+
+
+
+    }
