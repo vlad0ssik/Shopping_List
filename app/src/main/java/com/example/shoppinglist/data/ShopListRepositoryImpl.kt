@@ -11,7 +11,7 @@ object ShopListRepositoryImpl : ShopListRepository {
     private var autoIncrementId = 0
 
     init{
-        for (i in 1..10) addShopList(ShopItem("$i",i,true))
+        for (i in 1..100) addShopList(ShopItem("$i",i,true))
     }
 
     override fun addShopList(shopItem: ShopItem) {
