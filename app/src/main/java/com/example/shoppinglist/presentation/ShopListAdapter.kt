@@ -2,31 +2,23 @@ package com.example.shoppinglist.presentation
 
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.ListAdapter
 import com.example.shoppinglist.R
 import com.example.shoppinglist.domain.ShopItem
 
-class ShopListAdapter : RecyclerView.Adapter<ShopListAdapter.ShopItemViewHolder>() {
+class ShopListAdapter() : ListAdapter<ShopItem, ShopItemViewHolder>(ShopItemDiffCallback())
+//    RecyclerView.Adapter<ShopListAdapter.ShopItemViewHolder>()
+{
     companion object {
         const val VIEW_TYPE_ENABLED = 0
         const val VIEW_TYPE_DISABLED = 1
-
         const val MAX_POOL_SIZE = 5
     }
 
-    var shopList = listOf<ShopItem>()
-        set(value) {
-            val callback = ShopListDiffCallback(shopList,value)
-            val diffResult = DiffUtil.calculateDiff(callback)
-            field = value
-            diffResult.dispatchUpdatesTo(this)
-        }
-    var onShopItemLongClickListener: ((ShopItem)-> Unit)? = null
-    var onShopItemClickListener: ((ShopItem)-> Unit)? = null
+
+    var onShopItemLongClickListener: ((ShopItem) -> Unit)? = null
+    var onShopItemClickListener: ((ShopItem) -> Unit)? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ShopItemViewHolder {
 
@@ -41,29 +33,24 @@ class ShopListAdapter : RecyclerView.Adapter<ShopListAdapter.ShopItemViewHolder>
         )
     }
 
-    override fun getItemCount(): Int {
-        return shopList.size
-    }
-
     override fun onBindViewHolder(holder: ShopItemViewHolder, position: Int) {
-        val shopItem = shopList[position]
+        val shopItem = getItem(position)
         holder.nameTextView.text = shopItem.name
         holder.quantityTextView.text = shopItem.count.toString()
-        holder.itemView.setOnLongClickListener { onShopItemLongClickListener?.invoke(shopItem)
-        true}
-        holder.itemView.setOnClickListener{ onShopItemClickListener?.invoke(shopItem)
-            true}
+        holder.itemView.setOnLongClickListener {
+            onShopItemLongClickListener?.invoke(shopItem)
+            true
+        }
+        holder.itemView.setOnClickListener {
+            onShopItemClickListener?.invoke(shopItem)
+            true
+        }
 
         Log.d("Skoka view", "dohua")
     }
 
-    class ShopItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-
-        val nameTextView = itemView.findViewById<TextView>(R.id.shop_item_name)
-        val quantityTextView = itemView.findViewById<TextView>(R.id.shop_item_quantity)
-    }
 
     override fun getItemViewType(position: Int): Int {
-        return if (shopList[position].enabled) VIEW_TYPE_ENABLED else VIEW_TYPE_DISABLED
+        return if (getItem(position).enabled) VIEW_TYPE_ENABLED else VIEW_TYPE_DISABLED
     }
 }
