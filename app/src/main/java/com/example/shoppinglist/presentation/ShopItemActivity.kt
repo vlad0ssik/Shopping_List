@@ -15,13 +15,8 @@ import com.example.shoppinglist.domain.ShopItem
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 
-class ShopItemActivity : AppCompatActivity() {
-    private lateinit var viewModel: ShopItemViewModel
-    private lateinit var nameTextInputLayout: TextInputLayout
-    private lateinit var nameTextInputEditText: TextInputEditText
-    private lateinit var countTextInputLayout: TextInputLayout
-    private lateinit var countTextInputEditText: TextInputEditText
-    private lateinit var buttonSave: Button
+class ShopItemActivity : AppCompatActivity(), ShopItemFragment.OnEditingFinishListener {
+
     private var screenMode = MODE_UNKNOWN
     private var shopItemID = ShopItem.UNDEFINED_ID
 
@@ -29,91 +24,19 @@ class ShopItemActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_shop_item)
         parseIntent()
-        viewModel = ViewModelProvider(this)[ShopItemViewModel::class.java]
-        initViews()
-        addTextListeners()
-        chooseScreenMode()
-        setObservesOnLiveData()
+        if(savedInstanceState==null) chooseScreenMode()
+
     }
 
     private fun chooseScreenMode() {
-        when (screenMode) {
-            MODE_ADD -> launchAddMode()
-            MODE_EDIT -> launchEditMode()
+        val fragment = when (screenMode) {
+            MODE_ADD -> ShopItemFragment.newInstanceAddItem()
+            MODE_EDIT -> ShopItemFragment.newInstanceEditItem(shopItemID)
             else -> throw Exception("ShopItemActivity: calling incorect mode")
         }
+        supportFragmentManager.beginTransaction().replace(R.id.shop_item_container, fragment).commit()
     }
-
-    private fun setObservesOnLiveData() {
-        viewModel.shouldCloseActivity.observe(this) {
-            finish()
-        }
-        viewModel.errorInputCount.observe(this) {
-            if (it) {
-                countTextInputLayout.error = "Type correct count"
-            } else {
-                countTextInputLayout.error = null
-            }
-        }
-        viewModel.errorInputName.observe(this) {
-            if (it) {
-                nameTextInputLayout.error = "Type correct name"
-            } else {
-                nameTextInputLayout.error = null
-            }
-        }
-    }
-
-    private fun addTextListeners() {
-        nameTextInputEditText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-
-            }
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                viewModel.resetErrorInputName()
-            }
-
-            override fun afterTextChanged(s: Editable?) {
-            }
-        })
-        countTextInputEditText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-
-            }
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                viewModel.resetErrorInputCount()
-            }
-
-            override fun afterTextChanged(s: Editable?) {
-            }
-        })
-    }
-
-    private fun launchAddMode() {
-        buttonSave.setOnClickListener {
-            val name = nameTextInputEditText.text?.toString()
-            val count = countTextInputEditText.text?.toString()
-            viewModel.addShopItem(name, count)
-        }
-    }
-
-    private fun launchEditMode() {
-
-        fillEditTexts()
-        buttonSave.setOnClickListener {
-            val name = nameTextInputEditText.text?.toString()
-            val count = countTextInputEditText.text?.toString()
-            viewModel.editShopItem(name, count)
-
-        }
-    }
-
-    private fun setLiveDataObserves() {
-
-    }
-
+//
     private fun parseIntent() {
         if (!intent.hasExtra(EXTRA_SCREEN_MODE)) {
             throw RuntimeException("No any info about mode (ShopItemActivity)")
@@ -130,25 +53,6 @@ class ShopItemActivity : AppCompatActivity() {
             shopItemID = intent.getIntExtra(EXTRA_SHOP_ITEM_ID, ShopItem.UNDEFINED_ID)
         }
     }
-
-    private fun initViews() {
-        nameTextInputLayout = findViewById(R.id.nameTextInputLayout)
-        nameTextInputEditText = findViewById(R.id.nameTextInputEditText)
-        countTextInputLayout = findViewById(R.id.countTextInputLayout)
-        countTextInputEditText = findViewById(R.id.countTextInputEditText)
-        buttonSave = findViewById(R.id.buttonSave)
-    }
-
-
-    private fun fillEditTexts() {
-
-        val item = viewModel.getShopItem(shopItemID)
-        Log.d("Item: ", item.toString())
-        nameTextInputEditText.setText(item.name)
-        countTextInputEditText.setText(item.count.toString())
-
-    }
-
 
     companion object {
         private const val EXTRA_SCREEN_MODE = "extra_mode"
@@ -171,5 +75,9 @@ class ShopItemActivity : AppCompatActivity() {
             intent.putExtra(EXTRA_SHOP_ITEM_ID, shopItemId)
             return intent
         }
+    }
+
+    override fun onEditingFinish() {
+        finish()
     }
 }
