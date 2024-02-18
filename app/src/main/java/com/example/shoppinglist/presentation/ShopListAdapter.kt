@@ -2,8 +2,12 @@ package com.example.shoppinglist.presentation
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.databinding.DataBindingUtil
+import androidx.databinding.ViewDataBinding
 import androidx.recyclerview.widget.ListAdapter
 import com.example.shoppinglist.R
+import com.example.shoppinglist.databinding.ItemDisabledCardBinding
+import com.example.shoppinglist.databinding.ItemEnabledCardBinding
 import com.example.shoppinglist.domain.ShopItem
 
 class ShopListAdapter() : ListAdapter<ShopItem, ShopItemViewHolder>(ShopItemDiffCallback())
@@ -26,21 +30,38 @@ class ShopListAdapter() : ListAdapter<ShopItem, ShopItemViewHolder>(ShopItemDiff
             VIEW_TYPE_DISABLED -> R.layout.item_disabled_card
             else -> throw RuntimeException("Unknown view type: $viewType")
         }
-        return ShopItemViewHolder(
-            LayoutInflater.from(parent.context)
-                .inflate(layout, parent, false)
+        val binding = DataBindingUtil.inflate<ViewDataBinding>(
+            LayoutInflater.from(parent.context),
+            layout,
+            parent,
+            false
         )
+        return ShopItemViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ShopItemViewHolder, position: Int) {
         val shopItem = getItem(position)
-        holder.nameTextView.text = shopItem.name
-        holder.quantityTextView.text = shopItem.count.toString()
-        holder.itemView.setOnLongClickListener {
+        val binding = holder.binding
+        when (binding) {
+            is ItemDisabledCardBinding -> {
+                binding.shopItemName.text = shopItem.name
+                binding.shopItemQuantity.text = shopItem.count.toString()
+            }
+
+            is ItemEnabledCardBinding -> {
+                binding.shopItemName.text = shopItem.name
+                binding.shopItemQuantity.text = shopItem.count.toString()
+            }
+
+
+        }
+//        holder.nameTextView.text = shopItem.name
+//        holder.quantityTextView.text = shopItem.count.toString()
+        binding.root.setOnLongClickListener {
             onShopItemLongClickListener?.invoke(shopItem)
             true
         }
-        holder.itemView.setOnClickListener {
+        binding.root.setOnClickListener {
             onShopItemClickListener?.invoke(shopItem)
             true
         }

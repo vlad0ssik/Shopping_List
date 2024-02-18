@@ -8,48 +8,42 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.example.shoppinglist.R
+import com.example.shoppinglist.databinding.FragmentShopItemBinding
 import com.example.shoppinglist.domain.ShopItem
-import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
 
 class ShopItemFragment() : Fragment() {
     private lateinit var viewModel: ShopItemViewModel
-    private lateinit var nameTextInputLayout: TextInputLayout
-    private lateinit var nameTextInputEditText: TextInputEditText
-    private lateinit var countTextInputLayout: TextInputLayout
-    private lateinit var countTextInputEditText: TextInputEditText
-    private lateinit var buttonSave: Button
     private lateinit var onEditingFinishListener: OnEditingFinishListener
     private var shopItemID = ShopItem.UNDEFINED_ID
     private var screenMode: String = MODE_UNKNOWN
-
+    private var _binding: FragmentShopItemBinding? = null
+    private val binding: FragmentShopItemBinding get() = _binding ?: throw RuntimeException("FragmentShopItemBinding = null")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
-        Log.d("experimental, onCreateView", "nu onCreateView")
-        return inflater.inflate(R.layout.fragment_shop_item, container, false)
-
+        _binding = FragmentShopItemBinding.inflate(inflater, container, false)
+        binding.viewModel = viewModel
+        binding.lifecycleOwner = viewLifecycleOwner
+        return binding.root
     }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if(context is OnEditingFinishListener) onEditingFinishListener = context
+        if (context is OnEditingFinishListener) onEditingFinishListener = context
         else throw Exception("Activity must implement interface :\"onEditingFinishListener\"")
-        Log.d("experimental, onAttach", "nu onAttach")
+    }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding=null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        viewModel = ViewModelProvider(this)[ShopItemViewModel::class.java]
-        initViews(view)
         addTextListeners()
         chooseScreenMode()
         setObservesOnLiveData()
@@ -58,6 +52,8 @@ class ShopItemFragment() : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        viewModel = ViewModelProvider(this)[ShopItemViewModel::class.java]
+
         parseParams()
         Log.d("experimental, onCreate", "nu onCreate")
     }
@@ -83,24 +79,10 @@ class ShopItemFragment() : Fragment() {
         viewModel.shouldCloseActivity.observe(viewLifecycleOwner) {
             onEditingFinishListener?.onEditingFinish()
         }
-        viewModel.errorInputCount.observe(viewLifecycleOwner) {
-            if (it) {
-                countTextInputLayout.error = "Type correct count"
-            } else {
-                countTextInputLayout.error = null
-            }
-        }
-        viewModel.errorInputName.observe(viewLifecycleOwner) {
-            if (it) {
-                nameTextInputLayout.error = "Type correct name"
-            } else {
-                nameTextInputLayout.error = null
-            }
-        }
     }
 
     private fun addTextListeners() {
-        nameTextInputEditText.addTextChangedListener(object : TextWatcher {
+        binding.nameTextInputEditText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
 
             }
@@ -112,7 +94,7 @@ class ShopItemFragment() : Fragment() {
             override fun afterTextChanged(s: Editable?) {
             }
         })
-        countTextInputEditText.addTextChangedListener(object : TextWatcher {
+        binding.countTextInputEditText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
 
             }
@@ -127,19 +109,19 @@ class ShopItemFragment() : Fragment() {
     }
 
     private fun launchAddMode() {
-        buttonSave.setOnClickListener {
-            val name = nameTextInputEditText.text?.toString()
-            val count = countTextInputEditText.text?.toString()
+        binding.buttonSave.setOnClickListener {
+            val name = binding.nameTextInputEditText.text?.toString()
+            val count = binding.countTextInputEditText.text?.toString()
             viewModel.addShopItem(name, count)
         }
     }
 
     private fun launchEditMode() {
 
-        fillEditTexts()
-        buttonSave.setOnClickListener {
-            val name = nameTextInputEditText.text?.toString()
-            val count = countTextInputEditText.text?.toString()
+        val item = viewModel.getShopItem(shopItemID)
+        binding.buttonSave.setOnClickListener {
+            val name = binding.nameTextInputEditText.text?.toString()
+            val count = binding.countTextInputEditText.text?.toString()
             viewModel.editShopItem(name, count)
 
         }
@@ -163,27 +145,6 @@ class ShopItemFragment() : Fragment() {
             shopItemID = args.getInt(EXTRA_SHOP_ITEM_ID, ShopItem.UNDEFINED_ID)
         }
     }
-
-    private fun initViews(view: View) {
-        with(view) {
-            nameTextInputLayout = findViewById(R.id.nameTextInputLayout)
-            nameTextInputEditText = findViewById(R.id.nameTextInputEditText)
-            countTextInputLayout = findViewById(R.id.countTextInputLayout)
-            countTextInputEditText = findViewById(R.id.countTextInputEditText)
-            buttonSave = findViewById(R.id.buttonSave)
-        }
-    }
-
-
-    private fun fillEditTexts() {
-
-        val item = viewModel.getShopItem(shopItemID)
-        Log.d("Item: ", item.toString())
-        nameTextInputEditText.setText(item.name)
-        countTextInputEditText.setText(item.count.toString())
-
-    }
-
 
     companion object {
         private const val EXTRA_SCREEN_MODE = "extra_mode"
