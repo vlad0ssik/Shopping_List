@@ -1,17 +1,18 @@
 package com.example.shoppinglist.presentation
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import com.example.shoppinglist.data.ShopListRepositoryImpl
 import com.example.shoppinglist.domain.AddShopItemUseCase
 import com.example.shoppinglist.domain.EditShopItemUseCase
 import com.example.shoppinglist.domain.GetShopItemUseCase
 import com.example.shoppinglist.domain.ShopItem
 
-class ShopItemViewModel : ViewModel() {
+class ShopItemViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = ShopListRepositoryImpl
+    private val repository = ShopListRepositoryImpl(application)
     private val getShopItemUseCase = GetShopItemUseCase(repository)
     private val editShopItemUseCase = EditShopItemUseCase(repository)
     private val addShopItemUseCase = AddShopItemUseCase(repository)
@@ -42,62 +43,63 @@ class ShopItemViewModel : ViewModel() {
             addShopItemUseCase.addShopList(shopItem)
             finishWork()
         }
-}
+    }
 
-fun editShopItem(inputName: String?, inputCount: String?) {
-    val name = parseName(inputName)
-    val count = parseCount(inputCount)
-    val fieldsValid = validateInput(name, count)
-    if (fieldsValid) {
-        _shopItem.value?.let {
-            val item = it.copy(name = name, count = count)
-            editShopItemUseCase.editShopList(item)
-            finishWork()
+    fun editShopItem(inputName: String?, inputCount: String?) {
+        val name = parseName(inputName)
+        val count = parseCount(inputCount)
+        val fieldsValid = validateInput(name, count)
+        if (fieldsValid) {
+            _shopItem.value?.let {
+                val item = it.copy(name = name, count = count)
+                editShopItemUseCase.editShopList(item)
+                finishWork()
+            }
         }
     }
-}
 
-fun getShopItem(shopItemId: Int): ShopItem {
-    val item = getShopItemUseCase.getShopItem(shopItemId)
-    _shopItem.value = item
-    return item
-}
-
-fun parseCount(inputCount: String?): Int {
-    return try {
-        inputCount?.trim()?.toInt() ?: 0
-    } catch (e: Exception) {
-        0
+    fun getShopItem(shopItemId: Int): ShopItem {
+        val item = getShopItemUseCase.getShopItem(shopItemId)
+        _shopItem.value = item
+        return item
     }
-}
 
-private fun parseName(inputName: String?): String {
-    return inputName?.trim() ?: ""
-}
-
-private fun validateInput(name: String, count: Int): Boolean {
-    var result = true
-    if (name.isBlank()) {
-        result = false /// do message to edit texts
-        _errorInputName.value = true
-
+    fun parseCount(inputCount: String?): Int {
+        return try {
+            inputCount?.trim()?.toInt() ?: 0
+        } catch (e: Exception) {
+            0
+        }
     }
-    if (count <= 0) {
-        result = false
-        _errorInputCount.value = true
+
+    private fun parseName(inputName: String?): String {
+        return inputName?.trim() ?: ""
     }
-    return result
-}
 
-public fun resetErrorInputName() {
-    _errorInputName.value = false
-}
+    private fun validateInput(name: String, count: Int): Boolean {
+        var result = true
+        if (name.isBlank()) {
+            result = false /// do message to edit texts
+            _errorInputName.value = true
 
-public fun resetErrorInputCount() {
-    _errorInputCount.value = false
-}
+        }
+        if (count <= 0) {
+            result = false
+            _errorInputCount.value = true
+        }
+        return result
+    }
 
-private fun finishWork() {
-    _shouldCloseActivity.value = Unit
-}
+    public fun resetErrorInputName() {
+        _errorInputName.value = false
+    }
+
+    public fun resetErrorInputCount() {
+        _errorInputCount.value = false
+    }
+
+    private fun finishWork() {
+        _shouldCloseActivity.value = Unit
+    }
+
 }

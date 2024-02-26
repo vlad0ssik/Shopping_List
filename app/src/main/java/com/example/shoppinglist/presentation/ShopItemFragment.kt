@@ -49,28 +49,21 @@ class ShopItemFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         addTextListeners()
         chooseScreenMode()
-        setObservesOnLiveData()
-        Log.d("experimental, onViewCreated", "nu onViewCreated")
-    }
+        setObservesOnLiveData() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel = ViewModelProvider(this)[ShopItemViewModel::class.java]
-
+        val factory = ShopItemViewModelFactory(requireActivity().application)
+        viewModel = ViewModelProvider(this,factory)[ShopItemViewModel::class.java]
         parseParams()
-        Log.d("experimental, onCreate", "nu onCreate")
-    }
 
-    override fun onStart() {
-        super.onStart()
-        Log.d("experimental, onStart", "nu onStart")
     }
 
     private fun chooseScreenMode() {
         when (screenMode) {
             MODE_ADD -> launchAddMode()
             MODE_EDIT -> launchEditMode()
-            else -> throw Exception("ShopItemActivity: calling incorect mode")
+            else -> throw Exception("ShopItemActivity: calling incorrect mode")
         }
     }
 

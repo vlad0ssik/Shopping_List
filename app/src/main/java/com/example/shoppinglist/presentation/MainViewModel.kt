@@ -1,6 +1,7 @@
 package com.example.shoppinglist.presentation
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import com.example.shoppinglist.data.ShopListRepositoryImpl
 import com.example.shoppinglist.domain.DeleteShopItemUseCase
 import com.example.shoppinglist.domain.EditShopItemUseCase
@@ -8,8 +9,8 @@ import com.example.shoppinglist.domain.GetShopListUseCase
 import com.example.shoppinglist.domain.ShopItem
 
 
-class MainViewModel : ViewModel() {
-    private val repository = ShopListRepositoryImpl
+class MainViewModel(application: Application) : AndroidViewModel(application) {
+    private val repository = ShopListRepositoryImpl(application = application)
     private val getShopListUseCase = GetShopListUseCase(repository)
     private val editShopItemUseCase = EditShopItemUseCase(repository)
     private val deleteShopItemUseCase = DeleteShopItemUseCase(repository)
@@ -28,6 +29,7 @@ class MainViewModel : ViewModel() {
         val newItem = shopItem.copy(enabled = !shopItem.enabled)
         editShopItem(newItem)
     }
+
 
 
 }

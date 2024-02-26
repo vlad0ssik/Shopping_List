@@ -1,17 +1,14 @@
 package com.example.shoppinglist.presentation
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.shoppinglist.R
 import com.example.shoppinglist.databinding.ActivityMainBinding
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity(), ShopItemFragment.OnEditingFinishListener {
     private lateinit var viewModel: MainViewModel
@@ -23,7 +20,9 @@ class MainActivity : AppCompatActivity(), ShopItemFragment.OnEditingFinishListen
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 //        shopItemContainer = findViewById(R.id.shop_item_container)
-        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
+        val factory = MainViewModelFactory(application)
+        viewModel = ViewModelProvider(this, factory).get(MainViewModel::class.java)
+//            ViewModelProvider(this)[MainViewModel::class.java]
         setupRecyclerView()
         viewModel.shopList.observe(this) {
             adapter.submitList(it)
@@ -101,7 +100,7 @@ class MainActivity : AppCompatActivity(), ShopItemFragment.OnEditingFinishListen
             override fun onMove(
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder,
-                target: RecyclerView.ViewHolder
+                target: RecyclerView.ViewHolder,
             ): Boolean {
                 return false
             }
