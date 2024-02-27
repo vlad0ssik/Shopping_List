@@ -11,8 +11,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.example.shoppinglist.databinding.FragmentShopItemBinding
 import com.example.shoppinglist.domain.ShopItem
+import kotlinx.coroutines.launch
 
 class ShopItemFragment : Fragment() {
     private lateinit var viewModel: ShopItemViewModel
@@ -49,12 +51,13 @@ class ShopItemFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         addTextListeners()
         chooseScreenMode()
-        setObservesOnLiveData() }
+        setObservesOnLiveData()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val factory = ShopItemViewModelFactory(requireActivity().application)
-        viewModel = ViewModelProvider(this,factory)[ShopItemViewModel::class.java]
+        viewModel = ViewModelProvider(this, factory)[ShopItemViewModel::class.java]
         parseParams()
 
     }
@@ -106,16 +109,25 @@ class ShopItemFragment : Fragment() {
         binding.buttonSave.setOnClickListener {
             val name = binding.nameTextInputEditText.text?.toString()
             val count = binding.countTextInputEditText.text?.toString()
-            viewModel.addShopItem(name, count)
+            lifecycleScope.launch {
+
+                viewModel.addShopItem(name, count)
+            }
         }
     }
 
     private fun launchEditMode() {
-        viewModel.getShopItem(shopItemID)
+        lifecycleScope.launch {
+
+            viewModel.getShopItem(shopItemID)
+        }
         binding.buttonSave.setOnClickListener {
             val name = binding.nameTextInputEditText.text?.toString()
             val count = binding.countTextInputEditText.text?.toString()
+            lifecycleScope.launch {
             viewModel.editShopItem(name, count)
+
+            }
 
         }
     }

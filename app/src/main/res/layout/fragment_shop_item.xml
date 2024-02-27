@@ -51,7 +51,7 @@ app:errorInCount="@{viewModel.errorInputCount}"
                 android:id="@+id/countTextInputEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@{String.valueOf(viewModel.shopItem.count)}"
+                app:quantityInCount="@{viewModel.shopItem.count}"
 
                 android:hint="Count:"
                 android:inputType="number" />
